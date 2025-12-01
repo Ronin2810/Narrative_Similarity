@@ -1,5 +1,5 @@
 ```mermaid
-graph LR
+  graph LR
   A[PDFs by Ticker] --> B[Extract & Clean Text]
   B --> C[Embed Text]
   C --> D[(pgvector DB)]
