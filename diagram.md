@@ -1,4 +1,4 @@
-```mermaid
+<!-- ```mermaid
 flowchart LR
   %% ============= STYLES =============
   classDef step fill:#0ea5e9,stroke:#0369a1,color:#fff,stroke-width:1px;
@@ -31,7 +31,7 @@ flowchart LR
   A11 --> C1["Align by (period, i, j)"]:::step
   B7  --> C1
   C1 --> C2["Compare Sᵢⱼ,ₜ vs ρᵢⱼ,ₜ (or ρᵢⱼ,ₜ₊₁):<br/>• Regression: z(ρ) ~ S + controls<br/>• Rank/decile checks<br/>• AUC for predicting high future ρ"]:::calc
-  C2 --> C3["Report & Visualize:<br/>coeff β, CI, decile curves,<br/>heatmaps (S vs ρ), case timelines"]:::out
+  C2 --> C3["Report & Visualize:<br/>coeff β, CI, decile curves,<br/>heatmaps (S vs ρ), case timelines"]:::out -->
 
 ```mermaid
 flowchart LR
