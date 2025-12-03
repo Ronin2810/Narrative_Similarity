@@ -15,6 +15,7 @@ def fit_vectorizer(docs: List[Document]) -> BaseVectorizer:
     """Instantiate and (if needed) fit the chosen vectorizer."""
     texts = [d.text for d in docs]
     vec = get_vectorizer(prefer_finance=True, tfidf_dim=TFIDF_FALLBACK_DIM)
+    # vec = get_vectorizer(prefer_finance=True, tfidf_dim=TFIDF_FALLBACK_DIM, finance_model='philschmid/bge-base-financial-matryoshka')
     vec.fit(texts)  # no-op for finance; trains vocab for TF–IDF
     return vec
 

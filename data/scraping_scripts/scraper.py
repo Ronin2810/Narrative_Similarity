@@ -46,6 +46,17 @@ def get_pepsi_links():
     transcript_links = list(filter(lambda x: 'transcript' in x, transcript_links))
     return transcript_links
 
+def get_walmart_links():
+    url = 'https://stock.walmart.com/investors/financial-information/earnings/default.aspx'
+    response = requests.get(url)
+    soup = BeautifulSoup(response.content, 'html.parser')
+    transcripts = soup.find_all('div', class_='result-line')
+    transcript_links = [urljoin(url, transcript.find('a').get('href', '')) for transcript in transcripts]
+    transcript_links = list(filter(lambda x: 'transcript' in x, transcript_links))
+    # Make sure we return absolute URLs
+    from urllib.parse import urljoin
+
+
 def get_sanitized_filename(url, response, parent_folder):
     
     # Try to extract filename from Content-Disposition header

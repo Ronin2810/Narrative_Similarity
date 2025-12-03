@@ -45,6 +45,10 @@ class VectorStore:
                 embedding VECTOR({self.embed_dim}) NOT NULL
             );
             """
+            cur.execute('''
+                            DELETE FROM document_embeddings
+                        ''')
+
             cur.execute(create_table_sql)
 
             # Optional: index for similarity search later

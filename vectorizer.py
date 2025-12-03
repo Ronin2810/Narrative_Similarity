@@ -107,4 +107,4 @@ def get_vectorizer(
         except Exception as e:
             raise e
             # return TfidfVectorizerWrapper(max_features=tfidf_dim)
-    return TfidfVectorizerWrapper(max_features=tfidf_dim)
+    # return TfidfVectorizerWrapper(max_features=tfidf_dim)
