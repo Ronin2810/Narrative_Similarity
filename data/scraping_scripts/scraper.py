@@ -1,9 +1,14 @@
 import requests
 
-from bs4 import BeautifulSoup
+# from bs4 import BeautifulSoup
 import re
 import os
 from urllib.parse import urlparse, unquote
+import cloudscraper
+from urllib.parse import urljoin
+from bs4 import BeautifulSoup
+from playwright.sync_api import sync_playwright
+
 
 def get_coca_cola_links():
     url = 'https://investors.coca-colacompany.com/financial-information'
@@ -46,15 +51,100 @@ def get_pepsi_links():
     transcript_links = list(filter(lambda x: 'transcript' in x, transcript_links))
     return transcript_links
 
-def get_walmart_links():
-    url = 'https://stock.walmart.com/investors/financial-information/earnings/default.aspx'
-    response = requests.get(url)
-    soup = BeautifulSoup(response.content, 'html.parser')
-    transcripts = soup.find_all('div', class_='result-line')
-    transcript_links = [urljoin(url, transcript.find('a').get('href', '')) for transcript in transcripts]
-    transcript_links = list(filter(lambda x: 'transcript' in x, transcript_links))
-    # Make sure we return absolute URLs
-    from urllib.parse import urljoin
+def def_goog_transcripts(out_html="page_rendered.html", headless=False):
+    base = "https://abc.xyz"
+    url = "https://abc.xyz/investor/earnings/"
+
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=headless)
+        context = browser.new_context(
+            user_agent=(
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) "
+                "Chrome/123.0.0.0 Safari/537.36"
+            ),
+            locale="en-US",
+            viewport={"width": 1365, "height": 768},
+        )
+        page = context.new_page()
+
+        # Load the page like a real browser (Cloudflare challenges need JS + cookies)
+        page.goto(url, wait_until="domcontentloaded", timeout=120_000)
+        page.wait_for_load_state("networkidle", timeout=120_000)
+
+        html = page.content()
+
+        soup = BeautifulSoup(html, "lxml")
+        links = []
+        for a in soup.find_all("a", href=True):
+            href = urljoin(url, a["href"])
+            if "Earnings-Call" in href and href.startswith(base):
+                links.append(href)
+
+        links = sorted(set(links))
+
+        for link in links:
+            print(f'Visiting link: {link}')
+            page.goto(link, wait_until="domcontentloaded", timeout=120_000)
+            page.wait_for_load_state("networkidle", timeout=120_000)
+            html = page.content()
+            soup = BeautifulSoup(html, "html")
+            transcript = soup.find('div', class_='evergreen-event-body')
+            first_html = transcript.text
+            print(first_html)
+            filepath = r"CS57300/CS573/GOOG/" + link.split('/')[-1] + '.txt'
+            print("Writing to file...", filepath)
+            open(filepath, 'w', encoding='utf-8').write(first_html)
+
+        # print(links)
+        context.close()
+        browser.close()
+
+    return links
+
+def get_meta_links():
+    base = "https://investor.atmeta.com"
+    url = "https://investor.atmeta.com/investor-events/"
+
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=False)
+        context = browser.new_context(
+            user_agent=(
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) "
+                "Chrome/123.0.0.0 Safari/537.36"
+            ),
+            locale="en-US",
+            viewport={"width": 1365, "height": 768},
+        )
+        page = context.new_page()
+
+        # Load the page like a real browser (Cloudflare challenges need JS + cookies)
+        page.goto(url, wait_until="domcontentloaded", timeout=120_000)
+        page.wait_for_load_state("networkidle", timeout=120_000)
+
+        html = page.content()
+
+        soup = BeautifulSoup(html, "lxml")
+        links = []
+        for a in soup.find_all("a", href=True):
+            href = urljoin(url, a["href"])
+            if "Earnings-Call" in href and href.endswith('.pdf'):
+                links.append(href)
+
+        links = sorted(set(links))
+
+        for link in links:
+            print(f'Visiting link: {link}')
+            download_file(link, parent_folder='data\\META')
+
+
+        # print(links)
+        context.close()
+        browser.close()
+
+    return links
+
 
 
 def get_sanitized_filename(url, response, parent_folder):
@@ -160,5 +250,8 @@ def download_pepsi_transcripts():
 
 if __name__ == '__main__':
     # download_coca_cola_transcripts()
-    download_pepsi_transcripts()
+    # download_pepsi_transcripts()
+    # get_goog_links()
+    get_meta_links()
+    # download_file('', parent_folder='data\\META')
     
